@@ -1,0 +1,34 @@
+﻿<%inherit file="/base/base.html"/>
+<%namespace file="/utils/sidebars.html" name="sidebars" />
+<%namespace file="/utils/format.html" name="format" />
+
+<%def name="javascripts()" filter="trim"></%def>
+
+<div id="sidebar">
+    ${sidebars.tasks_menu()}
+</div>
+<div id="mainbar">
+
+        <h1>${case_status|h} Cases</h1>
+
+         <p>View All Cases<br/>
+            <a href='${urls.build("case.view_all", dict(view="Unassigned"))|h}'>View Unassigned Cases</a> |
+            <a href='${urls.build("case.view_all", dict(view="Created"))|h}'>View Created Cases</a> |
+            <a href='${urls.build("case.view_all", dict(view="Queued"))|h}'>View Open Cases with Unassigned Tasks</a> |
+            <a href='${urls.build("case.view_all", dict(view="Open"))|h}'>View Open Cases</a> |
+            <a href='${urls.build("case.view_all", dict(view="Closed"))|h}'>View Closed Cases</a> |
+            <a href='${urls.build("case.view_all", dict(view="Archived"))|h}'>View Archived Cases</a> |
+            <a href='${urls.build("case.view_all", dict(view="All"))|h}'>View All Cases</a>
+            </p>
+
+
+        % if len(cases) > 0 :
+            ${format.case_table(cases)}
+        % else:
+            % if case_status == "All":
+            <p>There are no cases.</p>
+            % else:
+            <p>There are no ${case_status.lower()|h} cases.</p>
+            % endif
+        % endif
+</div>

@@ -1,0 +1,294 @@
+<%def name="highlight(task, inv, highlighted)" filter="trim">
+    % if highlighted is not None and getattr(task, inv) is not None and getattr(task, inv) == highlighted:
+         class="highlight"
+    % endif
+</%def>
+
+<%def name="qa_task_table(tasks)" filter="trim">
+% if len(tasks) > 0:
+    <table class="case_table">
+        <tr>
+            <th>Case Name</th>
+            <th>Task Name</th>
+            <th>Principle Forensic Investigator</th>
+            <th>Secondary Forensic Investigator</th>
+            <th>Date QA requested</th>
+            <th>Principle QA assigned to</th>
+            <th>Secondary QA assigned to</th>
+            % if current_user.is_investigator():
+            <th>QA Task</th>
+            % endif
+        </tr>
+    % for task in tasks:
+        <tr>
+            <td><a href='${urls.build("case.view", dict(case_id=task.case.case_name))|h}'>${task.case.case_name|h}</a></td>
+            <td><a href='${urls.build("task.view", dict(task_id=task.task_name, case_id=task.case.case_name))|h}'>${task.task_name|h}</a></td>
+            <td>
+                % if task.principle_investigator != None:
+                    <a href="${urls.build('user.view', dict(user_id=task.principle_investigator.id))|h}">${task.principle_investigator.fullname|h}</a>
+                % else:
+                    None
+                % endif
+            </td>
+            <td>
+                % if task.secondary_investigator != None:
+                    <a href="${urls.build('user.view', dict(user_id=task.secondary_investigator.id))|h}">${task.secondary_investigator.fullname|h}</a>
+                % else:
+                    None
+                % endif
+            </td>
+            <td>${task.get_status().date|h}</td>
+            <td ${highlight(task, 'principle_QA', current_user)}>
+                % if task.principle_QA != None:
+                    <a href="${urls.build('user.view', dict(user_id=task.principle_QA.id))|h}">${task.principle_QA.fullname|h}</a>
+                % else:
+                    None
+                % endif
+            </td>
+            <td ${highlight(task, 'secondary_QA', current_user)}>
+                % if task.secondary_QA != None:
+                    <a href="${urls.build('user.view', dict(user_id=task.secondary_QA.id))|h}">${task.secondary_QA.fullname|h}</a>
+                % else:
+                    None
+                % endif
+            </td>
+            % if current_user.is_investigator():
+            <td>
+                % if current_user in task.QAs and task.status == task_statuses['qa']:
+                <a href='${urls.build("forensics.qa", dict(task_id=task.task_name, case_id=task.case.case_name))|h}'>QA task</a>
+                % else:
+                    X
+                % endif
+            </td>
+            % endif
+        </tr>
+    % endfor
+    </table>
+    % else:
+        <p>None.</p>
+    % endif
+</%def>
+
+<%def name="case_table(cases, highlighted=None)" filter="trim">
+    % if len(cases) == 0:
+    <p>None.</p>
+    % else:
+    <table class="case_table">
+        <tr>
+            <th>Case</th>
+            <th>Case Status</th>
+            <th>Case created</th>
+            <th>Primary Case Manager</th>
+            <th>Secondary Case Manager</th>
+            <th>Task</th>
+            <th>Task Type</th>
+            <th>Task Status</th>
+            <th>Principle Forensic Investigator</th>
+            <th>Secondary Forensic Investigator</th>
+        </tr>
+        % for case in cases:
+            % if len(case.tasks) == 0:
+        <tr>
+            <td>
+                % if case.private is True:
+                    <a href='${urls.build("case.view", dict(case_id=case.case_name))|h}'><span class="highlight">${case.case_name|h}</span></a>
+                % else:
+                    <a href='${urls.build("case.view", dict(case_id=case.case_name))|h}'>${case.case_name|h}</a>
+                % endif
+            </td>
+            <td>${case.status|h}</td>
+            <td>${case.date_created|h}</td>
+            % if case.principle_case_manager is None and case.secondary_case_manager is None:
+            <td colspan="2">
+                % if check_perms(case, 'edit'):
+                 <a href='${urls.build("case.edit", dict(case_id=case.case_name, active_tab=2))|h}'>Assign yourself to case</a>
+                % else:
+                None assigned
+                % endif
+            </td>
+            % else:
+            <td ${highlight(case, 'principle_case_manager', highlighted)}>
+                % if case.principle_case_manager != None:
+                <a href="${urls.build('user.view', dict(user_id=case.principle_case_manager.id))|h}">${case.principle_case_manager.fullname|h}</a>
+                % else:
+                None
+                % endif
+            </td>
+            <td ${highlight(case, 'secondary_case_manager', highlighted)}>
+                % if case.secondary_case_manager != None:
+                <a href="${urls.build('user.view', dict(user_id=case.secondary_case_manager.id))|h}">${case.secondary_case_manager.fullname|h}</a>
+                % else:
+                None
+                % endif
+            </td>
+            % endif
+            <td colspan="4">
+                % if check_perms(case, 'edit'):
+                <a href='${urls.build("task.add", dict(case_id=case.case_name))|h}'>Add Tasks</a>
+                % else:
+                No Tasks added.
+                % endif
+            </td>
+        </tr>
+            % else:
+                <% start_again = True %>
+                <% case_length = 0 %>
+                % for task in case.tasks:
+                    % if (case_status == task_statuses['queued'] and task.status == task_statuses['queued']) or case_status != task_statuses['queued']:
+                        <% case_length += 1 %>
+                    % endif
+                % endfor
+                % for task in case.tasks:
+                    % if (case_status == task_statuses['queued'] and task.status == task_statuses['queued']) or case_status != task_statuses['queued']:
+                    <tr>
+                        % if start_again:
+                            <td rowspan="${case_length|h}">
+                                % if case.private is True:
+                                    <a class="highlight" href='${urls.build("case.view", dict(case_id=case.case_name))|h}'>${case.case_name|h}</a>
+                                % else:
+                                    <a href='${urls.build("case.view", dict(case_id=case.case_name))|h}'>${case.case_name|h}</a>
+                                % endif
+                            </td>
+                            <td rowspan="${case_length|h}">${case.status|h}</td>
+                            <td rowspan="${case_length|h}">${case.date_created|h}</td>
+                            <td rowspan="${case_length|h}" ${highlight(case, 'principle_case_manager', highlighted)}>
+                                % if case.principle_case_manager != None:
+                                <a href="${urls.build('user.view', dict(user_id=case.principle_case_manager.id))|h}">${case.principle_case_manager.fullname|h}</a>
+                                % else:
+                                None
+                                % endif
+                            </td>
+                            <td rowspan="${case_length|h}" ${highlight(case, 'secondary_case_manager', highlighted)}>
+                                % if case.secondary_case_manager != None:
+                                <a href="${urls.build('user.view', dict(user_id=case.secondary_case_manager.id))|h}">${case.secondary_case_manager.fullname|h}</a>
+                                % else:
+                                None
+                                % endif
+                            </td>
+                        % endif
+                        <% start_again = False %>
+                        <td><a href='${urls.build("task.view", dict(task_id=task.task_name,case_id=case.case_name))|h}'>${task.task_name|h}</a></td>
+                        <td>${task.task_type.task_type|h}</td>
+                        <td>${task.status|h}</td>
+                        <td ${highlight(task, 'principle_investigator', highlighted)}>
+                            % if task.principle_investigator != None:
+                            <a href="${urls.build('user.view', dict(user_id=task.principle_investigator.id))|h}">${task.principle_investigator.fullname|h}</a>
+                            % else:
+                            None
+                           % endif
+                        </td>
+                        <td ${highlight(task, 'secondary_investigator', highlighted)}>
+                            % if task.secondary_investigator != None:
+                            <a href="${urls.build('user.view', dict(user_id=task.secondary_investigator.id))|h}">${task.secondary_investigator.fullname|h}</a>
+                            % else:
+                            None
+                            % endif
+                        </td>
+
+                    </tr>
+                    % endif
+                % endfor
+            % endif
+        % endfor
+    </table>
+    % endif
+</%def>
+
+<%def name="task_table(tasks, edit=False, show_qa=False, case_tasks=False, work_on=False, highlighted=None)" filter="trim">
+    % if len(tasks) > 0:
+        <table class="task_table">
+        <tr>
+            % if case_tasks:
+            <th>Case Name</th>
+            % endif
+            <th>Task Name</th>
+            <th>Task Created</th>
+            <th>Task Type</th>
+            <th>Status</th>
+            <th>Principle Forensic Investigator</th>
+            <th>Secondary Forensic Investigator</th>
+            % if show_qa:
+            <th>Principle QA Investigator</th>
+            <th>Secondary QA Investigator</th>
+            % endif
+        </tr>
+    % for task in tasks:
+        <tr>
+            % if case_tasks:
+                % if task.case.private is True:
+                    <td><a class="highlight" href='${urls.build("case.view", dict(case_id=task.case.case_name))|h}'>${task.case.case_name|h}</a></td>
+                % else:
+                    <td><a href='${urls.build("case.view", dict(case_id=task.case.case_name))|h}'>${task.case.case_name|h}</a></td>
+                % endif
+            % endif
+            % if edit is True:
+                % if task.case.private is True:
+                    <td><a class="highlight" href='${urls.build("task.edit", dict(task_id=task.task_name, case_id=task.case.case_name))|h}'>${task.task_name|h}</a></td>
+                % else:
+                    <td><a href='${urls.build("task.edit", dict(task_id=task.task_name, case_id=task.case.case_name))|h}'>${task.task_name|h}</a></td>
+                % endif
+            % else:
+                % if task.case.private is True:
+                    <td><a class="highlight" href='${urls.build("task.view", dict(task_id=task.task_name, case_id=task.case.case_name))|h}'>${task.task_name|h}</a></td>
+                % else:
+                    <td><a href='${urls.build("task.view", dict(task_id=task.task_name, case_id=task.case.case_name))|h}'>${task.task_name|h}</a></td>
+                % endif
+            % endif
+            <td>${task.date_created|h}</td>
+            <td>${task.task_type.task_type|h}</td>
+            <td>${task.status|h}</td>
+
+            % if task.principle_investigator != None:
+                % if highlighted is not None and highlighted == task.principle_investigator:
+                    <td class="highlight">
+                % else:
+                    <td>
+                % endif
+                 <a href='${urls.build("user.view", dict(user_id=task.principle_investigator.id))|h}'>${task.principle_investigator.fullname|h}</a></td>
+            % else:
+            <td>None</td>
+            % endif
+
+            % if task.secondary_investigator != None:
+                % if highlighted is not None and highlighted == task.secondary_investigator:
+                    <td class="highlight">
+                % else:
+                    <td>
+                % endif
+                <a href='${urls.build("user.view", dict(user_id=task.secondary_investigator.id))|h}'>${task.secondary_investigator.fullname|h}</a></td>
+            % else:
+            <td>None</td>
+            % endif
+
+            % if show_qa:
+
+                % if task.principle_QA != None:
+                    % if highlighted is not None and highlighted == task.principle_QA:
+                        <td class="highlight">
+                    % else:
+                        <td>
+                    % endif
+                <a href='${urls.build("user.view", dict(user_id=task.principle_QA.id))|h}'>${task.principle_QA.fullname|h}</a></td>
+                % else:
+                <td>None</td>
+                % endif
+
+                % if task.secondary_QA != None:
+                    % if highlighted is not None and highlighted == task.secondary_QA:
+                        <td class="highlight">
+                    % else:
+                        <td>
+                    % endif
+                <a href='${urls.build("user.view", dict(user_id=task.secondary_QA.id))|h}'>${task.secondary_QA.fullname|h}</a></td>
+                % else:
+                <td>None</td>
+                % endif
+
+            % endif
+        </tr>
+    % endfor
+    </table>
+    % else:
+        <p>None.</p>
+    % endif
+</%def>

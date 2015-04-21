@@ -1,0 +1,11 @@
+  
+all:
+  doctrine:
+    class: sfDoctrineDatabase
+    param:
+      dsn: 'mysql:dbname=qdpm;host=localhost'
+      username: aacebo
+      password: "<?php echo urlencode('poopie3') ; ?>"
+      attributes:
+        quote_identifier: true  
+  

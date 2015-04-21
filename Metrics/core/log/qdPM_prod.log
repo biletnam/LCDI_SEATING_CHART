@@ -1,0 +1,20 @@
+Mar 12 09:47:43 symfony [err] {sfError404Exception} Object tasks_reports does not exist ().
+Mar 24 16:35:30 symfony [err] {sfError404Exception} Empty module and/or action after parsing the URL "/tools/" (/).
+Apr 01 11:06:11 symfony [err] {Doctrine_Exception} Couldn't find class Clients
+Apr 01 11:47:58 symfony [err] {sfError404Exception} Action "clients/index" does not exist.
+Apr 01 11:48:04 symfony [err] {sfError404Exception} Action "clients/index" does not exist.
+Apr 01 11:48:04 symfony [err] {sfError404Exception} Action "clients/index" does not exist.
+Apr 01 11:55:28 symfony [err] {sfError404Exception} Action "clients/index" does not exist.
+Apr 01 11:57:48 symfony [err] {sfError404Exception} Action "clients/index" does not exist.
+Apr 01 11:57:49 symfony [err] {sfError404Exception} Action "clients/index" does not exist.
+Apr 01 11:57:49 symfony [err] {sfError404Exception} Action "clients/index" does not exist.
+Apr 01 11:57:50 symfony [err] {sfError404Exception} Action "clients/index" does not exist.
+Apr 01 11:57:50 symfony [err] {sfError404Exception} Action "clients/index" does not exist.
+Apr 01 11:57:50 symfony [err] {sfError404Exception} Action "clients/index" does not exist.
+Apr 01 11:57:59 symfony [err] {sfError404Exception} Action "clients/index" does not exist.
+Apr 01 11:58:54 symfony [err] {sfError404Exception} Action "clients/index" does not exist.
+Apr 01 11:59:03 symfony [err] {sfError404Exception} Action "clients/index" does not exist.
+Apr 01 11:59:21 symfony [err] {sfError404Exception} Action "clients/index" does not exist.
+Apr 01 12:03:47 symfony [err] {sfError404Exception} Action "clients/index" does not exist.
+Apr 01 12:03:53 symfony [err] {sfError404Exception} Action "clients/index" does not exist.
+Apr 02 18:07:54 symfony [err] {sfError404Exception} Empty module and/or action after parsing the URL "/tools/" (/).
